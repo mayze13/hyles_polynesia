@@ -1,0 +1,2 @@
+num_buses,trips_per_day,kms_per_trip,energy_per_km,energy_std,fuel_capacity,flow_rate,pumps_available,time_step,deltaArrivalTime,first_departure,last_arrival,start_date,days_to_predict,saturday_buses,saturday_trips
+10,80,10,1.5,0.3,50,4.5,2,15,2,06:00,22:00,2024-11-04,7,5,40
