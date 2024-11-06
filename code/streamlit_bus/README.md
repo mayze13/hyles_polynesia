@@ -26,7 +26,7 @@ pip install -r requirements.txt
 
 ## Command Line Interface Usage (Standalone Mode)
 
-The command-line version is provided in `bus_simulation.py`. This version allows you to run the simulation and output results to a CSV file.
+The command-line version is provided in `bus_simulation.py`. This version allows you to run the simulation and output results to a CSV file as well as an HTML to visualise the time-series.
 
 ### Running the Simulation
 
@@ -34,23 +34,23 @@ The script accepts an input CSV or Excel file with the simulation parameters. Th
 
 | num_buses | trips_per_day | kms_per_trip | energy_per_km | energy_std | fuel_capacity | flow_rate | pumps_available | time_step | deltaArrivalTime | first_departure | last_arrival | start_date | days_to_predict | saturday_buses | saturday_trips |
 | ----------| --------------| -------------| --------------| -----------| --------------| ----------| ----------------| ----------| ----------------| ----------------| -------------| -----------| ---------------| --------------| -------------- |
-| 10        | 80            | 10           | 1.5           | 0.3        | 50            | 4.5       | 2              | 15        | 2               | 06:00          | 22:00        | 2024-11-04 | 7             | 5              | 40             |
+| 10        | 80            | 16           | 1.5           | 0.3        | 50            | 1         | 2              | 15        | 2               | 06:00          | 22:00        | 2024-11-04 | 7             | 5              | 40             |
 
 **Example Command:**
 
 ```sh
-python bus_simulation.py -i ./input_params.csv -o simulation_results
+python bus_simulation.py example_data/Params.csv test
 ```
 
 This command will:
-- Read input parameters from `input_params.csv`.
+- Read input parameters from `Params.csv`.
 - Generate an output CSV file (`simulation_results.csv`) in the `./output/` directory.
-- Generate an interactive HTML plot (`simulation_results.html`) of the load over time.
+- Generate an interactive HTML plot (`test.html`) of the load over time.
 
 ### Command-Line Parameters Explained
 
-- **`-i` / `--input`**: Path to the input CSV or Excel file containing all required parameters.
-- **`-o` / `--output`**: Name for the output files (CSV and HTML). These will be saved in the `./output/` directory.
+- **`example_data/Params.csv`**: Path to the input CSV or Excel file containing all required parameters.
+- **`test`**: Name for the output files (CSV and HTML). These will be saved in the `./output/` directory.
 
 ### Input File Parameter Description
 - **`num_buses`**: Number of buses operating during weekdays.
@@ -123,5 +123,5 @@ If you have suggestions, bug reports, or feature requests, please feel free to c
 This project is licensed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
-For further questions or support, please contact [your-email@example.com].
+For further questions or support, please contact [james.moultrie13@gmail.com].
 
