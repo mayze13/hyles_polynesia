@@ -7,7 +7,7 @@ import io
 
 st.set_page_config(page_title='EV Fleet Simulation', layout='wide')
 
-st.title('Electric Vehicle Fleet Simulation')
+st.title('🚗 Electric Vehicle Fleet Simulation')
 
 # Sidebar for User Inputs
 st.sidebar.header('Simulation Parameters')
@@ -25,10 +25,10 @@ start_date = st.sidebar.date_input('Start Date', value=datetime.now().date())
 work_charging_probability = st.sidebar.slider('Work Charging Probability (%)', min_value=0.0, max_value=100.0, value=50.0, step=1.0) / 100.0
 # Fleet parameters
 st.sidebar.header('Fleet Parameters')
-num_evs = st.sidebar.number_input('Number of BEVs', min_value=0, value=1000, step=100)
+num_evs = st.sidebar.number_input('Number of BEVs', min_value=0, value=800, step=100)
 num_phevs = st.sidebar.number_input('Number of PHEVs', min_value=0, value=500, step=50)
 num_ldvs = st.sidebar.number_input('Number of LDVs', min_value=0, value=300, step=50)
-num_two_wheelers = st.sidebar.number_input('Number of Two Wheelers', min_value=0, value=200, step=50)
+num_two_wheelers = st.sidebar.number_input('Number of Two Wheelers', min_value=0, value=400, step=50)
 
 # Unified Average Daily Distance Parameters
 st.sidebar.header('Average Daily Distance')

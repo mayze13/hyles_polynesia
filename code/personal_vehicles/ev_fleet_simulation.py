@@ -80,7 +80,7 @@ class Vehicle:
             should_charge = (
                 self.state_of_charge < 0.2 * self.battery_capacity or
                 (self.state_of_charge > 0.7 * self.battery_capacity and random.random() < 0.3) or
-                (0.2 * self.battery_capacity <= self.state_of_charge <= 0.7 * self.battery_capacity)
+                (0.2 * self.battery_capacity <= self.state_of_charge <= 0.7 * self.battery_capacity and random.random() < 0.7)
             )
 
             if should_charge:
@@ -88,11 +88,11 @@ class Vehicle:
 
             # Add midday or evening charging events at work
             if behavior['location'] == 'Work' and day_type == 'Weekday':
-                if random.random() < 0.02:  # Midday charging
+                if random.random() < 0.05:  # Midday charging
                     midday_start = current_date.replace(hour=11, minute=30) + timedelta(hours=np.random.normal(0, 0.5))
                     midday_end = midday_start + timedelta(hours=2)
                     charging_events.extend(self._generate_charging_events(midday_start, midday_end, behavior, randomness))
-                if random.random() < 0.01:  # Evening charging
+                if random.random() < 0.02:  # Evening charging
                     evening_start = current_date.replace(hour=13, minute=30) + timedelta(hours=np.random.normal(0, 1))
                     evening_end = min(current_date.replace(hour=20, minute=0), evening_start + timedelta(hours=1.5))
                     charging_events.extend(self._generate_charging_events(evening_start, evening_end, behavior, randomness))
