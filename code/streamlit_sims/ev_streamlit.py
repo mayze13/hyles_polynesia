@@ -19,7 +19,7 @@ st.session_state.simulation_name = simulation_name
 simulation_days = st.sidebar.number_input('Simulation Days', min_value=1, max_value=365, value=7)
 resample_time = st.sidebar.selectbox(
     "Time step",
-    ("10T", "30T", "1H"),
+    ("10min", "30min", "1H"),
 )
 start_date = st.sidebar.date_input('Start Date', value=datetime.now().date())
 work_charging_probability = st.sidebar.slider('Work Charging Probability (%)', min_value=0.0, max_value=100.0, value=50.0, step=1.0) / 100.0
@@ -119,6 +119,9 @@ if 'load_profile' in st.session_state and not st.session_state['load_profile'].e
     # Plot load profiles by vehicle type
     load_profile.reset_index(inplace=True)
     fig = go.Figure()
+    fig.add_trace(go.Scatter(x=load_profile['timestamp'], y=load_profile['Total_Load'],
+                             mode='lines', name='Total', line=dict(color='#a6a6a6', width=1),
+                             fill='none'))
     fig.add_trace(go.Scatter(x=load_profile['timestamp'], y=load_profile['BEV_Load'],
                              mode='lines', name='BEV Load', line=dict(color='#98FB98', width=1),
                              fill='tonexty', stackgroup='one'))
@@ -132,8 +135,9 @@ if 'load_profile' in st.session_state and not st.session_state['load_profile'].e
                              mode='lines', name='Two Wheeler Load', line=dict(color='#87CEFA', width=1),
                              fill='tonexty', stackgroup='one'))
 
+
     fig.update_layout(
-        title='Fleet Charging Load Profile Over Time',
+        title='Fleet Charging Load Profile by Vehicle Type',
         xaxis_title='Time',
         yaxis_title='Power Demand (kW)',
         hovermode='x unified',
@@ -146,6 +150,9 @@ if 'load_profile' in st.session_state and not st.session_state['load_profile'].e
     location_profile = st.session_state['location_profile']
     location_profile.reset_index(inplace=True)
     fig_location = go.Figure()
+    fig_location.add_trace(go.Scatter(x=location_profile['timestamp'], y=location_profile['Total_Load'],
+                             mode='lines', name='Total', line=dict(color='#a6a6a6', width=1),
+                             fill='none'))
     fig_location.add_trace(go.Scatter(x=location_profile['timestamp'], y=location_profile['Home_Load'],
                                       mode='lines', name='Home Load', line=dict(color='#C19A6B', width=1),
                                       fill='tonexty', stackgroup='one'))
@@ -159,7 +166,7 @@ if 'load_profile' in st.session_state and not st.session_state['load_profile'].e
         yaxis_title='Power Demand (kW)',
         hovermode='x unified',
         xaxis=dict(tickformat='%b %d, %H:%M'),
-        yaxis=dict(ticksuffix=' kW')
+        yaxis=dict(ticksuffix=' kWh')
     )
     st.plotly_chart(fig_location, use_container_width=True)
 

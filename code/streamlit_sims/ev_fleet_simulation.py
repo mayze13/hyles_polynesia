@@ -71,9 +71,9 @@ class Vehicle:
             # Add variability to charging times
             charging_start_delay = np.random.uniform(-1.5, 2.0) if day_type == 'Weekend' else np.random.uniform(-1.5, 1.5)
             start_time = arrival_time + timedelta(hours=charging_start_delay)
-            charging_power = np.random.choice([3.7, 7.4, 11, 22], p=[0.3, 0.4, 0.2, 0.1])
+            charging_power = behavior['power']
 
-            # Calculate charging duration
+            # Calculate charging duration based on power and SOC
             end_time = min(departure_time, start_time + timedelta(hours=(self.battery_capacity - self.state_of_charge) / charging_power))
 
             # SOC-based charging behavior
@@ -106,13 +106,13 @@ class Vehicle:
         energy_transferred = min(self.battery_capacity - self.state_of_charge, charging_power * charging_duration)
         self.state_of_charge += energy_transferred
 
-        time_steps = pd.date_range(start=start_time, end=end_time, freq='10T')
+        time_steps = pd.date_range(start=start_time, end=end_time, freq='10min')
         for t in time_steps:
             power_variation = charging_power * (1 + np.random.uniform(-0.1, 0.1) * randomness)
             charging_events.append({
                 'vehicle_id': self.vehicle_id,
                 'timestamp': t,
-                'power': power_variation,
+                'power': power_variation,  # Power in kW
                 'vehicle_type': self.vehicle_type,
                 'location': behavior['location']
             })
@@ -120,6 +120,7 @@ class Vehicle:
         return charging_events
 
 # Simulation function (unchanged structure but more readable)
+
 def run_simulation(params, progress_callback=None):
     fleet = []
     vehicle_types = ['EV', 'PHEV', 'LDV', 'Two Wheeler']
@@ -178,17 +179,33 @@ def run_simulation(params, progress_callback=None):
 
     # Generate load profiles by vehicle type
     vehicle_types_dict = {'EV': 'BEV_Load', 'PHEV': 'PHEV_Load', 'LDV': 'LDV_Load', 'Two Wheeler': 'Two_Wheeler_Load'}
+
+    # Time step in hours (e.g., for 10 minutes, it's 10/60 = 0.1667 hours)
+    time_step_hours = pd.to_timedelta(params['resample_time']).total_seconds() / 3600.0
+
     load_profile = pd.concat(
-        [charging_events_df[charging_events_df['vehicle_type'] == v_type]['power'].resample(params['resample_time']).sum().rename(load_name)
-         for v_type, load_name in vehicle_types_dict.items()],
+        [
+            (charging_events_df[charging_events_df['vehicle_type'] == v_type]['power']
+            .resample(params['resample_time'])
+            .sum()
+            .div(time_step_hours)  # Convert total energy (kWh) to average power (kW)
+            .rename(load_name))
+            for v_type, load_name in vehicle_types_dict.items()
+        ],
         axis=1
     ).fillna(0)
+
     load_profile['Total_Load'] = load_profile.sum(axis=1)
 
     # Load profiles by location
     location_profile = pd.concat([
-        charging_events_df[charging_events_df['location'] == loc]['power'].resample(params['resample_time']).sum().rename(f"{loc}_Load")
+        (charging_events_df[charging_events_df['location'] == loc]['power']
+        .resample(params['resample_time'])
+        .sum()
+        .div(time_step_hours)  # Convert total energy (kWh) to average power (kW)
+        .rename(f"{loc}_Load"))
         for loc in ['Home', 'Work']
     ], axis=1).fillna(0)
+    location_profile['Total_Load'] = location_profile.sum(axis=1)
 
     return charging_events_df.reset_index(), load_profile, location_profile
