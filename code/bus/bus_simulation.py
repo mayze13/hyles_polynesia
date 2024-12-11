@@ -67,7 +67,7 @@ class HydrogenBus:
 
 def run_hydrogen_bus_simulation(params, output_path=None, plot_path=None):
     """
-    Runs a simulation for a fleet of hydrogen buses, calculating daily driving and refueling.
+    Runs a simulation for a fleet of hydrogen buses, calculating daily driving, refueling, and production load.
 
     Parameters:
     - params (dict): Dictionary of simulation parameters.
@@ -78,6 +78,7 @@ def run_hydrogen_bus_simulation(params, output_path=None, plot_path=None):
     time_step = pd.Timedelta(minutes=params['time_step'])
     time_step_minutes = params['time_step']
     delta_time = params['deltaArrivalTime'] * time_step_minutes  # Gap in minutes between each bus's charging session
+    production_efficiency = params.get('production_efficiency', 55)  # kWh per kg of hydrogen produced (default 55)
     simulation_data = []
 
     for day in pd.date_range(start=params['start_date'], periods=params['days_to_predict']):
@@ -119,12 +120,6 @@ def run_hydrogen_bus_simulation(params, output_path=None, plot_path=None):
         charging_start_time = datetime.combine(day, params['last_arrival']) + timedelta(hours=1)
         charging_end_time = datetime.combine(day + timedelta(days=1), params['first_departure'])
 
-        charging_time_series = pd.date_range(
-            start=charging_start_time,
-            end=charging_end_time,
-            freq=time_step
-        )
-
         refuel_queue = []
         for bus in buses:
             bus.simulate_day_driving()
@@ -147,10 +142,16 @@ def run_hydrogen_bus_simulation(params, output_path=None, plot_path=None):
                 for i in range(pumps_available):
                     if pump_next_available_time[i] <= ts and refuel_queue:
                         bus = refuel_queue.pop(0)
-                        active_load = bus.incremental_charge(time_step_minutes)
-                        load_kw = active_load * 33.33 / (time_step_minutes / 60)
+                        active_charge = bus.incremental_charge(time_step_minutes)
+                        dispensing_load_kw = active_charge * 33.33 / (time_step_minutes / 60)
 
-                        load_data[bus.bus_id] = load_kw
+                        # Calculate production load
+                        production_load_kw = active_charge * production_efficiency / (time_step_minutes / 60)
+
+                        # Total load for this bus
+                        total_load_kw = dispensing_load_kw + production_load_kw
+                        load_data[bus.bus_id] = total_load_kw
+
                         pump_next_available_time[i] = ts + timedelta(minutes=delta_time)
 
                         if bus.state_of_fuel < bus.fuel_capacity:
@@ -165,68 +166,24 @@ def run_hydrogen_bus_simulation(params, output_path=None, plot_path=None):
     simulation_df = pd.DataFrame(simulation_data)
     simulation_df.set_index('timestamp', inplace=True)
 
+    # New Dataframe for Conversion Efficiency Plot
+    efficiency_data = []
+    for _, row in simulation_df.iterrows():
+        total_load = row['Total_Load']
+        electrolysis_load = total_load * 0.7
+        tsd_load = electrolysis_load * 0.8
+        fuel_cell_load = tsd_load * 0.55
+        efficiency_data.append({
+            'timestamp': row.name,
+            'Electrolysis': electrolysis_load,
+            'TSD': tsd_load,
+            'Fuel_Cell': fuel_cell_load
+        })
+
+    efficiency_df = pd.DataFrame(efficiency_data)
+    efficiency_df.set_index('timestamp', inplace=True)
+
     if output_path:
         simulation_df.to_csv(output_path)
 
-    if plot_path:
-        fig = go.Figure()
-        # Plot each bus line in a separate color with markers and lines, using all buses from the DataFrame columns
-        for column in simulation_df.columns:
-            if column != 'Total_Load':
-                fig.add_trace(go.Scatter(
-                    x=simulation_df.index,
-                    y=simulation_df[column],
-                    mode='lines+markers',
-                    name=column,
-                    connectgaps=False  # Do not connect gaps in the data
-                ))
-
-        # Plot the total load
-        fig.add_trace(go.Scatter(
-            x=simulation_df.index,
-            y=simulation_df['Total_Load'],
-            mode='lines',
-            name='Total Load',
-            line=dict(width=2, dash='dash'),
-            connectgaps=False  # Do not connect gaps in the data
-        ))
-
-        fig.update_layout(title='Hydrogen Bus Fleet Load Over Time',
-                          xaxis_title='Time',
-                          yaxis_title='Load (kW)',
-                          hovermode='x unified')
-        fig.write_html(plot_path)
-
-    return simulation_df
-
-
-def main(input_file, output_name):
-    output_dir = pathlib.Path('./output')
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    output_file = output_dir / f"{output_name}.csv"
-    plot_file = output_dir / f"{output_name}.html"
-
-    if input_file.endswith('.csv'):
-        params_df = pd.read_csv(input_file)
-    elif input_file.endswith('.xlsx'):
-        params_df = pd.read_excel(input_file)
-    else:
-        raise ValueError("Input file must be either .csv or .xlsx")
-
-    params = params_df.iloc[0].to_dict()
-    params['first_departure'] = datetime.strptime(params['first_departure'], "%H:%M").time()
-    params['last_arrival'] = datetime.strptime(params['last_arrival'], "%H:%M").time()
-    params['start_date'] = pd.to_datetime(params['start_date']).date()
-
-    simulation_df = run_hydrogen_bus_simulation(params, output_file, plot_file)
-    print(f"Simulation complete. Output saved to {output_file} and plot saved to {plot_file}")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Hydrogen Bus Fleet Simulation')
-    parser.add_argument('input_file', type=str, help='Path to the input CSV or XLSX file')
-    parser.add_argument('output_name', type=str, help='Base name for output files (CSV and HTML)')
-    args = parser.parse_args()
-
-    main(args.input_file, args.output_name)
+    return simulation_df, efficiency_df
