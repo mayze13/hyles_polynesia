@@ -1,6 +1,7 @@
 data/
-doc/
-code/timeseres_analysis/
+doc/network_diagrams/Tahiti
+code/timeseres_analysis/synthetic_data_creation
 code/cars/VEHICLE PROJECTIONS.xlsx
 code/cars/output
 code/bus/output
+code/bus/__pycache__

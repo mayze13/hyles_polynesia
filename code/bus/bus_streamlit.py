@@ -13,7 +13,7 @@ from bus_simulation import run_hydrogen_bus_simulation
 st.set_page_config(page_title='Hydrogen Bus Fleet Simulation', layout='wide')
 st.title("🚌 Hydrogen Bus Fleet Simulation")
 
-@st.cache
+@st.cache_data
 def cached_hydrogen_bus_simulation(params):
     """Cache the hydrogen bus simulation to avoid recomputing on each interaction."""
     return run_hydrogen_bus_simulation(params)
