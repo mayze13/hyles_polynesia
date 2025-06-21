@@ -5,6 +5,6 @@ code/cars/output
 code/bus/output
 doc/
 code/common/
-code/timeseres_analysis/
+code/timeseries_analysis/
 code/bus/__pycache__
 code/cars/__pycache__
