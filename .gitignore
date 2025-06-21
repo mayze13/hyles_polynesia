@@ -1,16 +1,6 @@
-
-/code/common/__pycache__
-code/common/borrar_LOAD.py
-code/common/borrar_LOAD_new.py
-/code/timeseries_analysis/synthetic_data_creation/__pycache__
-/berna
-/bullshit
-/dataHaha
-/EVI-Pro-Lite-master
-data/PivotGrid.xlsx
-data/IP1990.xlsx
-__pycache__/EVIProLite_LoadPlotting.cpython-310.pyc
-__pycache__/ev_fleet_simulation.cpython-310.pyc
-.ipynb_checkpoints/Untitled-checkpoint.ipynb
-.ipynb_checkpoints/README-checkpoint.md
-code/timeseries_analysis/synthetic_data_creation/ev/.ipynb_checkpoints/ev_power_profile_creation-checkpoint.py
+data/
+doc/
+code/timeseres_analysis/
+code/cars/VEHICLE PROJECTIONS.xlsx
+code/cars/output
+code/bus/output
