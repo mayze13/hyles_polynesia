@@ -5,3 +5,5 @@ code/cars/VEHICLE PROJECTIONS.xlsx
 code/cars/output
 code/bus/output
 code/bus/__pycache__
+doc/
+doc/network_diagrams/
